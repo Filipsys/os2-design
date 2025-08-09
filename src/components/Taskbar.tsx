@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { NUMERIC } from "../assets/fonts/helv/variables";
+
 import CommandsIcon from "../assets/icons/commands-folder-icon.svg?react";
 import DiskIcon from "../assets/icons/disk-icon.svg?react";
 import DrivesIcon from "../assets/icons/drives-icon.svg?react";
@@ -11,7 +13,30 @@ import ShutdownIcon from "../assets/icons/shutdown-icon.svg?react";
 import SwitchIcon from "../assets/icons/switch-icon.svg?react";
 import TrayIcon from "../assets/icons/tray-icon.svg?react";
 
-const Button = (props: { trayChild?: boolean; icon: React.FC }) => {
+const FontArray = (props: { text: string; fontSize?: number }) => (
+  <div className="flex gap-[4px]">
+    {props.text.split("").map((char, index) => {
+      if (char.charCodeAt(0) >= 48 && char.charCodeAt(0) <= 57) {
+        const Icon = NUMERIC[Number(char)];
+
+        return (
+          <Icon
+            key={`font-${crypto.randomUUID()}-${index}`}
+            className={`${props.fontSize ?? "h-3 aspect-[10/18]"}`}
+          />
+        );
+      }
+
+      return <span key={`font-${crypto.randomUUID()}-${index}`}>{char}</span>;
+    })}
+  </div>
+);
+
+const Button = (props: {
+  trayChild?: boolean;
+  icon: React.FC;
+  children?: ReactNode;
+}) => {
   const [pressed, setPressed] = useState(false);
 
   const inTray = props.trayChild ?? false;
@@ -24,9 +49,13 @@ const Button = (props: { trayChild?: boolean; icon: React.FC }) => {
       onMouseUp={() => setPressed(false)}
     >
       <div
-        className={`*:size-[17px] ${pressed ? "translate-x-[1px] translate-y-[1px]" : null}`}
+        className={`flex items-center ${pressed ? "translate-x-[1px] translate-y-[1px]" : null}`}
       >
-        <props.icon />
+        <div className="*:h-[17px]">
+          <props.icon />
+        </div>
+
+        {props.children}
       </div>
     </button>
   );
@@ -44,7 +73,7 @@ const ObjectTray = (props: { children: React.ReactNode }) => {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: Buttons in buttons aren't valid HTML
     <div
-      className={`relative h-full w-full flex gap-[1px] border ${pressed ? "border-t-black border-l-black  border-b-gray-200" : "border-r-black border-b-black border-t-gray-200 border-l-gray-200"}`}
+      className={`relative h-full w-full flex gap-[1px] border ${pressed ? "before: border-t-black border-l-black  border-b-gray-200" : "border-r-black border-b-black border-t-gray-200 border-l-gray-200"}`}
       onMouseDown={(event) =>
         event.target === event.currentTarget ? setPressed(true) : null
       }
@@ -65,7 +94,10 @@ export const Taskbar = () => (
     <Button icon={LockIcon} />
     <Button icon={FlashlightIcon} />
     <Button icon={ShutdownIcon} />
-    <Button icon={DiskIcon} />
+    <Button icon={DiskIcon}>
+      <FontArray text="123" />
+    </Button>
+
     <Button icon={TrayIcon} />
     <ObjectTray>
       <Button trayChild icon={DrivesIcon} />
